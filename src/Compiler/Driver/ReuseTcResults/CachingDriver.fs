@@ -113,7 +113,7 @@ type CachingDriver(tcConfig: TcConfig) =
 
     let getThisCompilationReferences = Seq.map formatAssemblyReference >> Seq.toArray
 
-    member _.TryReuseTcResults inputs =
+    member _.CanReuseTcResults inputs =
         let prevTcDataOpt = readPrevTcData ()
 
         let thisTcData =
@@ -129,14 +129,11 @@ type CachingDriver(tcConfig: TcConfig) =
 
             if prevTcData = thisTcData then
                 use _ = Activity.start Activity.Events.reuseTcResultsCacheHit []
-
-                () // do nothing, yet
+                true
             else
                 use _ = Activity.start Activity.Events.reuseTcResultsCacheMissed []
-
-                writeThisTcData thisTcData
+                false
 
         | None ->
             use _ = Activity.start Activity.Events.reuseTcResultsCacheAbsent []
-
-            writeThisTcData thisTcData
+            false

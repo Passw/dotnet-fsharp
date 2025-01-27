@@ -54,6 +54,7 @@ open FSharp.Compiler.TypedTree
 open FSharp.Compiler.TypedTreeOps
 open FSharp.Compiler.XmlDocFileWriter
 open FSharp.Compiler.CheckExpressionsOps
+open ReuseTcResults
 
 //----------------------------------------------------------------------------
 // Reporting - warnings, errors
@@ -162,6 +163,11 @@ let TypeCheck
 
         let eagerFormat (diag: PhasedDiagnostic) = diag.EagerlyFormatCore true
 
+        let cachingDriver = CachingDriver(tcConfig)
+        if cachingDriver.CanReuseTcResults(inputs) then
+            // do nothing, yet
+            ()
+
         CheckClosedInputSet(
             ctok,
             diagnosticsLogger.CheckForErrors,
@@ -171,8 +177,7 @@ let TypeCheck
             None,
             tcInitialState,
             eagerFormat,
-            inputs
-        )
+            inputs)
     with exn ->
         errorRecovery exn rangeStartup
         exiter.Exit 1
